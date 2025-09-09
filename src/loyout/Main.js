@@ -2,26 +2,53 @@ import React from 'react';
 import Preloader from '../components/Preloader';
 import MovieList from '../components/MovieList';
 import './Main.css';
+import Search from '../components/Search';
+import { type } from '@testing-library/user-event/dist/type';
+
+
 
 class Main extends React.Component
 {
-    state = {movies:[]}
+    state = {movies:[], loading:false, type:"all"}
     componentDidMount()
     {
-        fetch('https://omdbapi.com/?apikey=fcb5c527&s=Terminator')
+        fetch('https://omdbapi.com/?apikey=fcb5c527&s=Matrix')
         .then(response=>response.json())
         .then(data=>this.setState({movies:data.Search}))
     }
+    
+   searchMovie = (str, type = 'all') =>
+   {
+    this.setState({loading:true})
+    fetch(`https://omdbapi.com/?apikey=fcb5c527&s=${str.trim()}${type !== 'all' ? `&type=${type}` :''}`)
+    .then(response=>response.json())
+    .then
+    (
+        data => 
+            {
+                if(data.Response==="True")this.setState({movies:data.Search, loading:false});
+                else this.setState({movies:[], loading:false});
+            }
+    )
+
+    //this.setState({loading:false});
+   }
     render()
     {
         return(
             <div className='main'>
                 <div className='wrap'>
+                    <Search searchMovie={this.searchMovie}/>
                     {
-                        this.state.movies.length ? <MovieList movies={this.state.movies}/>:<Preloader/>
+                        !this.state.loading&& //this.state.movies.length&&
+                        (this.state.movies.length ? <MovieList movies={this.state.movies}/>:<Preloader/>)
+                        
                     }
-
+                    
+                  
                 </div>
+             
+               
             </div>
         )
     }
